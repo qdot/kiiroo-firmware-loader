@@ -53,4 +53,10 @@ export default class App extends Vue {
     await device.Disconnect();
     this.isWorking = false;
   }
+
+  public HasBluetooth() {
+    return ((navigator !== undefined) &&
+            (navigator.bluetooth !== undefined));
+  }
+
 }

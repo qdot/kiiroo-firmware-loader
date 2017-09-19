@@ -2,12 +2,14 @@
   <div id="app">
     <div>
     <md-stepper md-vertical>
-      <md-step md-label="Welcome">
+      <md-step md-label="Welcome" :md-continue="HasBluetooth()">
         <p>Welcome to the Kiiroo Firmware Repair Utility. This is a community developed tool for loading and fixing firmware on Kiiroo toys.</p>
 
-        <p>We currently only support the Fleshlight Launch. Pearl 2 support coming soon.</p>
+        <p v-if="HasBluetooth()">We currently only support the Fleshlight Launch. Pearl 2 support coming soon.</p>
 
-        <p>Please note that this utility is neither developed nor endorsed by Kiiroo or Fleshlight. The developers of this tool are not liable for damage to products, and usage of this tool may void the warranty of your product.</p>
+        <p v-if="HasBluetooth()">Please note that this utility is neither developed nor endorsed by Kiiroo or Fleshlight. The developers of this tool are not liable for damage to products, and usage of this tool may void the warranty of your product.</p>
+
+        <p v-if="!HasBluetooth()"><b>Unfortunately the browser you are currently using is not supported by this utility.</b> We require WebBluetooth, which is available on Google Chrome 61 for macOS and Linux, Chrome on Android 6 (M) or higher, and ChromeOS. This utility does not currently work on Windows or iOS.</p>
       </md-step>
       <md-step md-label="Initial Diagnosis" :md-continue="firmwareVersion !== null">
         <p>As a first step, we will need you to allow connection to your Fleshlight Launch so we can see what state it is in.</p>
