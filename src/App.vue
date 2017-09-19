@@ -58,11 +58,25 @@
           </p>
         </div>
       </md-step>
+      <md-step md-label="Select Firmware File" :md-continue="this.firmware !== null">
+        <p>Now we'll need to select and upload a firmware file to load to the Launch.</p>
+        <md-input-container>
+          <md-file
+            accept="*"
+            placeholder="Click to select firmware file"
+            @selected="onFirmwareFileChange" />
+        </md-input-container>
+      </md-step>
       <md-step md-label="Reboot to Bootloader">
+        <p>Now we'll need to reboot the launch to bootloader mode.</p>
+        <md-button class="md-raised md-primary" @click="RebootToBootloader">Connect and Reboot to Bootloader</md-button>
       </md-step>
       <md-step md-label="Firmware Load">
+        <p>Now we'll need to load the firmware.</p>
+        <md-button class="md-raised md-primary" @click="LoadFirmware">Connect and Load Firmware</md-button>
       </md-step>
       <md-step md-label="Mode Lock">
+        <md-button class="md-raised md-primary" id="mode-change-button" @click="ConnectAndTryModeLock">Connect and Try Mode Lock</md-button>
       </md-step>
       <md-step md-label="Finished">
       </md-step>
