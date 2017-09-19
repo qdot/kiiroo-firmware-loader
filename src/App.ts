@@ -21,8 +21,8 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-const firmwareFileTest =
-  async (hexArrays: Map<number, Uint8Array>, aFlashInfo: any): Promise<Map<number, number[][]>> => {
+const firmwareFileTest = async (hexArrays: Map<number, Uint8Array>,
+                                aFlashInfo: any): Promise<Map<number, number[][]>> => {
   // const aFlashInfo = { writeBlockCommandSize: 2,
   //                      flashEraseValue: 255,
   //                      programRowLength: 240,
@@ -140,6 +140,10 @@ export default class App extends Vue {
   private isWorking: boolean = false;
   private logList: string[] = [];
   private firmware: Map<number, Uint8Array> | null = null;
+  private firmwareLoadingProgress: string | null = null;
+  private firmwareLoaded: boolean = false;
+  private firmwareProgress: string | null = null;
+  private firmwareLoading: boolean = false;
 
   public async ConnectAndDiagnose() {
     this.isWorking = true;
@@ -231,6 +235,7 @@ export default class App extends Vue {
   }
 
   private async RebootToBootloader() {
+    this.logList = [];
     console.log("Finding Launch");
     const d = new LaunchBluetooth();
     try {
@@ -249,34 +254,41 @@ export default class App extends Vue {
   }
 
   private async LoadFirmware() {
-    console.log("Finding Launch");
+    this.logList = [];
+    this.firmwareProgress = "Connecting to the hardware...";
     const d = new LaunchBluetooth();
     try {
       await d.Connect();
+      this.firmwareProgress = "Connected to the hardware...";
+      this.firmwareLoading = true;
+      if (await d.GetInAppMode()) {
+        this.logList.push("Somehow we got here in app mode. We need to be in bootloader mode for this step. Please hit the back button below.");
+        this.firmwareLoading = false;
+        return;
+      }
+      this.firmwareProgress = "Getting flash info...";
+      const flashInfo = await d.GetFlashInfo();
+      const dataRows = await firmwareFileTest(this.firmware!, flashInfo);
+      this.firmwareProgress = "Resetting hardware memory...";
+      await d.eraseMemory();
+      let i: number = 1;
+      for (const row of Array.from(dataRows.keys())) {
+        this.firmwareProgress = `Pushing Row ${i} of ${dataRows.size}...`;
+        await d.pushRowData(dataRows.get(row)!);
+        this.firmwareProgress = `Writing Row ${i} of ${dataRows.size}...`;
+        await d.writeRowData(row);
+        i += 1;
+      }
+      await d.verifyMemory();
+      await d.getMemoryCRC();
+      await d.rebootAndChangeMode();
+      this.firmwareLoaded = true;
+      this.firmwareProgress = `All done! The Launch should be blinking blue now. If it is, hit 'Continue'.`;
     } catch (e) {
       this.logList.push(e.toString());
       this.logList.push(e.stack);
+      this.firmwareLoading = false;
       return;
     }
-    console.log("Found Launch");
-    if (await d.GetInAppMode()) {
-      console.log("Somehow we got here in app mode. We need to be in bootloader mode for this step.");
-      return;
-    }
-    const flashInfo = await d.GetFlashInfo();
-    const dataRows = await firmwareFileTest(this.firmware!, flashInfo);
-    await d.eraseMemory();
-    for (const row of Array.from(dataRows.keys())) {
-      console.log("Pushing " + row.toString());
-      await d.pushRowData(dataRows.get(row)!);
-      console.log("Writing " + row.toString());
-      await d.writeRowData(row);
-    }
-    await d.verifyMemory();
-    await d.getMemoryCRC();
-    await d.rebootAndChangeMode();
-    await sleep(5000);
-    await d.Connect();
-    await d.LockAppMode();
   }
 }
