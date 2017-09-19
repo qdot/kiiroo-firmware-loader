@@ -10,19 +10,27 @@ export default class App extends Vue {
   private firmwareCRC: string | null = null;
   private inAppMode: boolean | null = null;
   private isWorking: boolean = false;
+  private logList: string[] = [];
 
   public async ConnectAndDiagnose() {
     this.isWorking = true;
+    this.logList = [];
     const device = new LaunchBluetooth();
-    await device.Connect();
-    this.inAppMode = await device.GetInAppMode();
-    if (this.inAppMode) {
-      await device.LockAppMode();
+    try {
+      await device.Connect();
+      this.inAppMode = await device.GetInAppMode();
+      if (this.inAppMode) {
+        await device.LockAppMode();
+      }
+      this.firmwareVersion = await device.GetVersion();
+      const crc = await device.getMemoryCRC();
+      this.firmwareCRC = crc[0].toString(16) + crc[1].toString(16);
+      await device.Disconnect();
+    } catch (e) {
+      this.logList.push(e.toString());
+      this.logList.push(e.stack);
     }
-    this.firmwareVersion = await device.GetVersion();
-    const crc = await device.getMemoryCRC();
-    this.firmwareCRC = crc[0].toString(16) + crc[1].toString(16);
-    await device.Disconnect();
+
     this.isWorking = false;
   }
 
@@ -32,25 +40,33 @@ export default class App extends Vue {
 
   public async ConnectAndTryModeChange() {
     this.isWorking = true;
+    this.logList = [];
     const device = new LaunchBluetooth();
-    await device.Connect();
     try {
+      await device.Connect();
       await device.rebootAndChangeMode();
       // This is so dumb, but if we don't bail on the wait, it just gets stuck.
       await this.sleep(1000);
       await device.Disconnect();
     } catch (e) {
-      console.log(e);
+      this.logList.push(e.toString());
+      this.logList.push(e.stack);
     }
     this.isWorking = false;
   }
 
   public async ConnectAndTryModeLock() {
     this.isWorking = true;
+    this.logList = [];
     const device = new LaunchBluetooth();
-    await device.Connect();
-    await device.LockAppMode();
-    await device.Disconnect();
+    try {
+      await device.Connect();
+      await device.LockAppMode();
+      await device.Disconnect();
+    } catch (e) {
+      this.logList.push(e.toString());
+      this.logList.push(e.stack);
+    }
     this.isWorking = false;
   }
 

@@ -25,6 +25,12 @@
           <b>Firmware CRC</b>: {{ this.firmwareCRC }}<br/>
           <b>Is the Launch in App Mode?</b>: {{ this.inAppMode ? "Yes" : "No"}}<br/>
         </div>
+        <div v-if="logList.length > 0">
+          <b>Errors:</b><br/>
+          <p v-for="item in this.logList">
+            {{ item }}
+          </p>
+        </div>
         <br/>
       </md-step>
       <md-step md-label="Mode Lock Test">
@@ -44,6 +50,12 @@
         </div>
         <div v-if="inAppMode">
           <p>It looks like your Launch is in app mode, which means you probably want to update the firmware. Hit the continue button to proceed.</p>
+        </div>
+        <div v-if="logList.length > 0">
+          <b>Errors:</b><br/>
+          <p v-for="item in this.logList">
+            {{ item }}
+          </p>
         </div>
       </md-step>
       <md-step md-label="Reboot to Bootloader">
