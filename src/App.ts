@@ -262,7 +262,7 @@ export default class App extends Vue {
       this.firmwareProgress = "Connected to the hardware...";
       this.firmwareLoading = true;
       if (await d.GetInAppMode()) {
-        this.logList.push("Somehow we got here in app mode. We need to be in bootloader mode for this step. Please hit the back button below.");
+        this.logList.push("We need to be in bootloader mode for this step. Please hit the back button below.");
         this.firmwareLoading = false;
         return;
       }
