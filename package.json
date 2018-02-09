@@ -12,7 +12,8 @@
     "webpack-defaults": "webpack-defaults",
     "build:main": "tsc -p tsconfig.json",
     "pretest": "yarn build:main",
-    "test": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\"}' mocha --compilers ts:ts-node/register 'tests/**/*.ts'"
+    "test": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\"}' mocha --compilers ts:ts-node/register 'tests/**/*.ts'",
+    "deploy": "trash deploy && mkdir -p deploy && cp index.html deploy && cp -r dist deploy"
   },
   "author": "Kyle Machulis <kyle@machul.is>",
   "private": true,
