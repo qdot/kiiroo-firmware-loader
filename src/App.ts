@@ -105,8 +105,9 @@ const firmwareFileTest = async (hexArrays: Map<number, Uint8Array>,
           // If we've hit the row end, fill as much as we can then append null commands.
           dataCommand = flatten(commandArray.splice(0, commandLimit - commandsRead));
           // Paste some null commands on to the end to fill things out.
+          // Each packet must contain exactly 6 words
           dataCommand = dataCommand.concat(
-            flatten(Array(commandsPerRowCommand - (commandLimit - commandsRead)).fill(eraseCommand)));
+            flatten(Array(commandsPerRowCommand - dataCommand.length / aFlashInfo.bytesPerAddress).fill(eraseCommand)));
           commandsRead = commandLimit;
         }
 
